@@ -12,6 +12,7 @@
 
 [//]: # (Image References)
 
+[imaged1]: ./image/fcn_diagram.png "FCN Diagram"
 [imagef1]: ./image/following1.png "Image following the target 1"
 [imagef2]: ./image/following2.png "Image following the target 2"
 [imagef3]: ./image/following3.png "Image following the target 3"
@@ -21,8 +22,10 @@
 [imagew1]: ./image/with1.png "Image with the target 1"
 [imagew2]: ./image/with2.png "Image with the target 2"
 [imagew3]: ./image/with3.png "Image with the target 3"
-[imageg1]: ./image/loss_graph.png "Loss Graph"
-[imageg2]: ./image/IoU_graph.png "IoU Graph"
+[imageg1]: ./image/loss_graph.png "Loss Graph 210 Epochs"
+[imageg2]: ./image/IoU_graph.png "IoU Graph 210 Epochs"
+[imageg3]: ./image/loss_graph.png "Loss Graph 570 Epochs"
+[imageg4]: ./image/IoU_graph.png "IoU Graph 570 Epochs"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/1155/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
@@ -30,6 +33,48 @@
 ---
 
 ### FCN Model (model_training.ipynb)
+#### Visualization
+
+
+![alt text][imaged1]
+
+
+#### Explanation
+The conventional CNNs are suitable for classification of a given image. However, when the task is to detect where is the target object in a given image, CNNs do not have this information since they lose the spatial information during classification.
+
+The FCNs main difference with CNNs is to keep the spatial information, and to classify each pixel of the image. In order to achieve this, there are three main changes applied to the CNN architecture.
+
+1. The fully connected layers are replaced with 1x1 Convolutional Layers
+2. Up sampling through the use of transposed convolutional layers.
+3. Skip connections.
+
+##### 1. 1x1 Convolutions
+After decoding the image, the fully connected layer comes in CNNs. The fully connected layer has a 4D input and 2D output. Replacing it with a 1 by 1 convolutional layer changes the output to remain 4D. This enables to keep the spatial information. For 1 by 1 convolutional layers, the shape of the output is the same as the shape of the input except the depth, the number of filters. The batch size, the height and the width of the input is preserved.
+
+1 by 1 convolution is actually is a convoulution with
+* 1x1 filter size, kernel_size=1
+* Strides=1
+* Padding=SAME
+* The number of filters is the variable to set.
+
+When classifying an image fully connected layers are more suitable, because they can easily connected to the following layers and eventually a 1D output. However, when classifying each pixel, 1x1 convolutional layers are an appropriate choice. Since they can keep the spatial information.
+
+
+##### 2. Up Sampling (Transposed Convolution)
+The up sampling operation is basicly a reverse convolution. Therefore, the differentiability property is preserved. The upsampling layers are used to decode the encoded image layer by layer.
+
+##### 3. Skip Connections
+Use infromation from multiple resoulution scales. This result in the network to be able to make more precise segmentation decisions. In addition, the lost information during encoding can be retained back.
+In the decoder layers, the output of the previous layer and the corresponding encoding layer or the input layer are concatenated. During this operation, the connections are skipped and the two nonconsecutive layers are connected.
+
+
+##### 4. Encoder
+Series of convolutional layers. The goal of the encoder is to extract features from the image. These features provide information for classification. They contain the pixelwise information and the relations between neighbor pixels.
+
+##### 5. Decoder
+The decoder up scales the output of the encoder. The resulting image has the same size with the input image. Since the encoded image provides information for classification, the decoder layers keep this information and the resulting image has classified pixels.
+
+
 #### Encoder (encoder_block)
 There are 2 encoder layers. First one has 32 filters and the second has 64 filters. They consist of separable convolution layers.
 ##### Separable Convoulution (separable_conv2d_batchnorm)
@@ -81,6 +126,8 @@ Batch size set to 16. Since the memory of the used GPU was 2 GB, batch size can 
 
 num_epochs is the number of epochs to test the model. num_epoch_loop is the number to define the number of the loops. Each loop has num_epochs epochs. The initial loop was not included. Therefore, there were 200 + 10 = 210 epochs.
 
+As the second step, the number of epochs was increased to 570.
+
 steps_per_epoch and validation steps were leaved as they were.
 
 ### Model 2 (model_training_model2.ipynb)
@@ -108,6 +155,8 @@ It took much more time to train the second model. 65 epochs in 16 hours on a E3 
 ### Results
 The first model trained for 210 epochs. For every 10 epochs, the results were tested. The best final score value obtained was 0.41578874130264754 at epoch 170. The model was trained on 650M 2GB GPU for 10 hours.
 
+After training to epoch 570, the best final score value obtained was 0.4355026050577782 at epoch 260.
+
 #### Loss Graph
 The loss graph on train data and validation data for the 210 epochs are given in the following graph:
 
@@ -115,12 +164,23 @@ The loss graph on train data and validation data for the 210 epochs are given in
 ![alt text][imageg1]
 
 
+The loss graph on train data and validation data for the 570 epochs are given in the following graph:
+
+
+![alt text][imageg3]
+
 
 #### IoU Graph
-The IoU metrics were calculated for every ten epochs. And the graph of the metrics are given in the following graph.
+The IoU metrics were calculated for every ten epochs. The graph of the metrics for 210 epochs are given in the following graph.
 
 
 ![alt text][imageg2]
+
+
+The IoU metrics were calculated for every ten epochs. The graph of the metrics for 570 epochs are given in the following graph.
+
+
+![alt text][imageg4]
 
 
 #### Following the Target
@@ -166,7 +226,7 @@ The original image, ground truth image and the processed image for three samples
 
 ### Future Enhancements
 The graphs from the previous section shows that there is a room for improvement if the model was trained for longer epochs.
-Similarly, the batch size can be increased.
+Similarly, the batch size can be increased. After the second step, training for 570 epochs, increasing the number of epochs does not seem to improve the results.
 
 
 A better learning rate may exists. The time limit and computation power limit prevented training with different learning rates such as 0.0075 and 0.0125.
