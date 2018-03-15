@@ -24,8 +24,8 @@
 [imagew3]: ./image/with3.png "Image with the target 3"
 [imageg1]: ./image/loss_graph.png "Loss Graph 210 Epochs"
 [imageg2]: ./image/IoU_graph.png "IoU Graph 210 Epochs"
-[imageg3]: ./image/loss_graph.png "Loss Graph 570 Epochs"
-[imageg4]: ./image/IoU_graph.png "IoU Graph 570 Epochs"
+[imageg3]: ./image/loss_graph2.png "Loss Graph 570 Epochs"
+[imageg4]: ./image/IoU_graph2.png "IoU Graph 570 Epochs"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/1155/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
