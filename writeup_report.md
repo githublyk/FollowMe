@@ -73,9 +73,9 @@ In the decoder layers, the output of the previous layer and the corresponding en
 ##### 4. Encoder
 Series of convolutional layers. The goal of the encoder is to extract features from the image. These features provide information for classification. They contain the pixel wise information and the relations between neighbor pixels.
 
-The purpose of the encoder layers is to represent the data with less information as in the compression. However, encoders in neural networks usually can not achieve this without losing information.
+The purpose of the encoder layers is to represent the data with less information as in the compression. However, the encoders in neural networks cannot compress well enough to keep all the details of the image.
 
-Encoding is looking closely at the picture. This result in narrowing down the scope and the loss of the bigger picture. Once the encoder loses this information, decoding the encoded information cannot retrieve the original image. 
+Encoding is looking closely at the picture. This result in narrowing down the scope and the loss of the bigger picture. Once the encoder lost the details of the picture, decoding the encoded information cannot retrieve the original image.
 
 The below image from lesson shows an example of the encoding operation.
 
