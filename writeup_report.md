@@ -26,6 +26,8 @@
 [imageg2]: ./image/IoU_graph.png "IoU Graph 210 Epochs"
 [imageg3]: ./image/loss_graph2.png "Loss Graph 570 Epochs"
 [imageg4]: ./image/IoU_graph2.png "IoU Graph 570 Epochs"
+[imagee1]: ./image/encoding.png "Encoding Operation"
+[imagee2]: ./image/decoding.png "Decoding Operation"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/1155/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
@@ -51,7 +53,7 @@ The FCNs main difference with CNNs is to keep the spatial information, and to cl
 ##### 1. 1x1 Convolutions
 After decoding the image, the fully connected layer comes in CNNs. The fully connected layer has a 4D input and 2D output. Replacing it with a 1 by 1 convolutional layer changes the output to remain 4D. This enables to keep the spatial information. For 1 by 1 convolutional layers, the shape of the output is the same as the shape of the input except the depth, the number of filters. The batch size, the height and the width of the input is preserved.
 
-1 by 1 convolution is actually is a convoulution with
+1 by 1 convolution is actually is a convolution with
 * 1x1 filter size, kernel_size=1
 * Strides=1
 * Padding=SAME
@@ -61,23 +63,38 @@ When classifying an image fully connected layers are more suitable, because they
 
 
 ##### 2. Up Sampling (Transposed Convolution)
-The up sampling operation is basicly a reverse convolution. Therefore, the differentiability property is preserved. The upsampling layers are used to decode the encoded image layer by layer.
+The up sampling operation is basically a reverse convolution. Therefore, the differentiability property is preserved. The up-sampling layers are used to decode the encoded image layer by layer.
 
 ##### 3. Skip Connections
-Use infromation from multiple resoulution scales. This result in the network to be able to make more precise segmentation decisions. In addition, the lost information during encoding can be retained back.
+Use information from multiple resolution scales. This result in the network to be able to make more precise segmentation decisions. In addition, the lost information during encoding can be retained back.
 In the decoder layers, the output of the previous layer and the corresponding encoding layer or the input layer are concatenated. During this operation, the connections are skipped and the two nonconsecutive layers are connected.
 
 
 ##### 4. Encoder
-Series of convolutional layers. The goal of the encoder is to extract features from the image. These features provide information for classification. They contain the pixelwise information and the relations between neighbor pixels.
+Series of convolutional layers. The goal of the encoder is to extract features from the image. These features provide information for classification. They contain the pixel wise information and the relations between neighbor pixels.
+
+The purpose of the encoder layers is to represent the data with less information as in the compression. However, encoders in neural networks usually can not achieve this without losing information.
+
+Encoding is looking closely at the picture. This result in narrowing down the scope and the loss of the bigger picture. Once the encoder loses this information, decoding the encoded information cannot retrieve the original image. 
+
+The below image from lesson shows an example of the encoding operation.
+
+
+![alt text][imagee1]
+
 
 ##### 5. Decoder
 The decoder up scales the output of the encoder. The resulting image has the same size with the input image. Since the encoded image provides information for classification, the decoder layers keep this information and the resulting image has classified pixels.
 
+During the up-scaling process, decoding the output is not sufficient, because the encoder had lost the details of the original image. Decoder layers can recover this details by using the input to the corresponding encoder layer. "Skip Connections" section explains this operation. The effect of "Skip Connections" is given in the following image.  It helps to recover the image in high resolution.
+
+
+![alt text][imagee2]
+
 
 #### Encoder (encoder_block)
 There are 2 encoder layers. First one has 32 filters and the second has 64 filters. They consist of separable convolution layers.
-##### Separable Convoulution (separable_conv2d_batchnorm)
+##### Separable Convolution (separable_conv2d_batchnorm)
 Contains two operations SeparableConv2DKeras, and BatchNormalization.
 SeparableConv2DKeras function uses the following inputs:
 * provided filter size (32, 64)
@@ -102,11 +119,11 @@ Applied regular 2D convolution with
 Has 2 decoder layers.
 * Decoder1, concatenates output of 1x1 Convolution layer and the output of the first encoder layer. Filter size is 64.
 * Decoder2, concatenates output of first decoder layer and the input. Filter size is 32.
-##### Upsample (bilinear_upsample)
-Used bilinear_upsample function to tha small_ip layer.
+##### Up-sample (bilinear_upsample)
+Used bilinear_upsample function to the small_ip layer.
 
 ##### Concatenate (layers.concatenate)
-Then the output of the upsample operation concatenated with the large_ip layer.
+Then the output of the up-sample operation concatenated with the large_ip layer.
 
 ##### Separable Convolution (separable_conv2d_batchnorm)
 Applied to the concatenated layer.
@@ -134,7 +151,7 @@ steps_per_epoch and validation steps were leaved as they were.
 #### Layers
 Has 4 encoder layers with filter sizes 8, 16, 32, and 64.
 1x1 Convolution layer is the same with the first model.
-Has 4 decoler layers, with filter sizes 64, 32, 16, and 8. The concatenated layers are as follows:
+Has 4 decoder layers, with filter sizes 64, 32, 16, and 8. The concatenated layers are as follows:
 * decoder1 conv1_1, encoder3
 * decoder2 decoder1, encoder2
 * decoder3 decoder2, encoder1
